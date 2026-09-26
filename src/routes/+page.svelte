@@ -2,7 +2,7 @@
   import { onMount, tick } from 'svelte';
   import { supabase } from '$lib/supabaseClient';
   import { getWhatsAppProvider, getProviderColor, type Provider } from '$lib/utils/whatsapp';
-  import { Upload, CheckCircle, Search, ChevronDown, Camera, FolderOpen, Shield } from 'lucide-svelte';
+  import { Upload, CheckCircle, Search, ChevronDown, Camera, FolderOpen, Shield, X } from 'lucide-svelte';
 
   let siswiList = $state<any[]>([]);
   let filteredSiswi = $state<any[]>([]);
@@ -52,8 +52,20 @@
 
 
   // Fungsi untuk Resize & Crop (Kompresi ke bawah 1MB)
-  async function processAndCropImage(fileOrBlob: File | Blob, targetWidth: number, targetHeight: number, quality = 0.7): Promise<File> {
-    return new Promise((resolve, reject) => {
+  async function installPwa() {
+    if (!deferredPrompt) return;
+    // Show the install prompt
+    deferredPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      console.log('User accepted the install prompt');
+    }
+    deferredPrompt = null;
+    showInstallBanner = false;
+  }
+
+  async function processAndCropImage(fileOrBlob: File | Blob, targetWidth: number, targetHeight: number, quality = 0.7): Promise<File> {    return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(fileOrBlob);
       
@@ -181,7 +193,19 @@
 
   const webhookUrl = 'https://script.google.com/macros/s/AKfycb.../exec'; // Ganti dengan Webhook URL asli
 
+  let deferredPrompt = $state<any>(null);
+  let showInstallBanner = $state(false);
+  
   onMount(async () => {
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later.
+      deferredPrompt = e;
+      // Update UI to notify the user they can add to home screen
+      showInstallBanner = true;
+    });
+
     await fetchSiswiList();
   });
 
