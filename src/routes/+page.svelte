@@ -2,7 +2,7 @@
   import { onMount, tick } from 'svelte';
   import { supabase } from '$lib/supabaseClient';
   import { getWhatsAppProvider, getProviderColor, type Provider } from '$lib/utils/whatsapp';
-  import { Upload, CheckCircle, Search, ChevronDown, Camera, FolderOpen, Shield, X } from 'lucide-svelte';
+  import { Upload, CheckCircle, Search, ChevronDown, Camera, FolderOpen, Shield, X, FileImage } from 'lucide-svelte';
 
   let siswiList = $state<any[]>([]);
   let filteredSiswi = $state<any[]>([]);
