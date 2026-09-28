@@ -478,6 +478,8 @@
             </div>
           </div>
           
+          </div>
+          
           <!-- Kanan: Info Utama -->
           <div class="flex-1">
             <h2 class="text-2xl font-extrabold text-slate-900 mb-1">{selectedSiswiDetail.full_name}</h2>
@@ -648,3 +650,4 @@
     </div>
   </div>
 {/if}
+
