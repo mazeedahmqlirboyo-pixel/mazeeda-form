@@ -638,10 +638,10 @@
           <div class="sm:col-span-2 mb-6">
             <p class="text-sm text-slate-500 mb-6">Khusus Tim Panitia: Silakan unggah foto formulir kertas fisik siswi sebagai arsip cadangan digital.</p>
             
-            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
+            <div class="flex flex-row gap-3 sm:gap-6">
               
               <!-- UPLOAD 1 (Wajib) -->
-              <div class="flex-1 bg-slate-50 rounded-2xl sm:rounded-3xl p-4 border border-slate-200 flex flex-col items-center shadow-sm">
+              <div class="flex-1 bg-slate-50 rounded-xl sm:rounded-3xl p-2 sm:p-4 border border-slate-200 flex flex-col items-center shadow-sm">
                 <!-- Atas: Image Preview -->
                 <div class="w-full relative bg-white rounded-xl sm:rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center mb-3">
                   {#if formData.paper_form_url}
@@ -657,11 +657,11 @@
                 </div>
 
                 <!-- Bawah: Tombol (Berjejer ke Samping) -->
-                <div class="flex flex-row gap-3 justify-center w-full">
-                  <button type="button" onclick={() => openCameraModal('paper_form')} class="flex-1 h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-all text-slate-600" title="Kamera">
+                <div class="flex flex-row gap-2 sm:gap-3 justify-center w-full">
+                  <button type="button" onclick={() => openCameraModal('paper_form')} class="flex-1 h-10 sm:h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-all text-slate-600" title="Kamera">
                     <Camera class="w-5 h-5" />
                   </button>
-                  <label class="flex-1 h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center cursor-pointer transition-all text-slate-600" title="Galeri">
+                  <label class="flex-1 h-10 sm:h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center cursor-pointer transition-all text-slate-600" title="Galeri">
                     <FolderOpen class="w-5 h-5" />
                     <input type="file" accept="image/*" onchange={(e) => { currentUploadType = 'paper_form'; handleDocumentUpload(e); }} class="hidden" />
                   </label>
@@ -669,7 +669,7 @@
               </div>
 
               <!-- UPLOAD 2 (Opsional) -->
-              <div class="flex-1 bg-slate-50 rounded-2xl sm:rounded-3xl p-4 border border-slate-200 flex flex-col items-center shadow-sm">
+              <div class="flex-1 bg-slate-50 rounded-xl sm:rounded-3xl p-2 sm:p-4 border border-slate-200 flex flex-col items-center shadow-sm">
                 <!-- Atas: Image Preview -->
                 <div class="w-full relative bg-white rounded-xl sm:rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center mb-3">
                   {#if formData.paper_form_url_2}
@@ -685,11 +685,11 @@
                 </div>
 
                 <!-- Bawah: Tombol (Berjejer ke Samping) -->
-                <div class="flex flex-row gap-3 justify-center w-full">
-                  <button type="button" onclick={() => openCameraModal('paper_form_2')} class="flex-1 h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-all text-slate-600" title="Kamera">
+                <div class="flex flex-row gap-2 sm:gap-3 justify-center w-full">
+                  <button type="button" onclick={() => openCameraModal('paper_form_2')} class="flex-1 h-10 sm:h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-all text-slate-600" title="Kamera">
                     <Camera class="w-5 h-5" />
                   </button>
-                  <label class="flex-1 h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center cursor-pointer transition-all text-slate-600" title="Galeri">
+                  <label class="flex-1 h-10 sm:h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center cursor-pointer transition-all text-slate-600" title="Galeri">
                     <FolderOpen class="w-5 h-5" />
                     <input type="file" accept="image/*" onchange={(e) => { currentUploadType = 'paper_form_2'; handleDocumentUpload(e); }} class="hidden" />
                   </label>
