@@ -184,7 +184,11 @@
       }
 
       const { data } = supabase.storage.from('avatars').getPublicUrl(file.name);
-      formData.paper_form_url = data.publicUrl;
+      if (currentUploadType === 'paper_form_2') {
+        formData.paper_form_url_2 = data.publicUrl;
+      } else {
+        formData.paper_form_url = data.publicUrl;
+      }
       isUploadingDoc = false;
       
     }, 'image/jpeg', 0.8);
