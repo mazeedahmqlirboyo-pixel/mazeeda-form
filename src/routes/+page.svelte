@@ -43,6 +43,7 @@
   });
 
   let isUploading = $state(false);
+  let currentUploadType = $state('paper_form');
     let isUploadingDoc = $state(false);
 
   // State untuk Webcam
@@ -110,7 +111,8 @@
     });
   }
 
-  async function openCameraModal() {
+  async function openCameraModal(uploadType: string = 'paper_form') {
+    currentUploadType = uploadType;
     if (!selectedSiswi) {
       errorMsg = 'Silakan pilih Nama / NIS Anda terlebih dahulu di bagian atas.';
       return;
@@ -313,7 +315,11 @@
     }
 
     const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
-    formData.paper_form_url = data.publicUrl;
+    if (currentUploadType === 'paper_form_2') {
+      formData.paper_form_url_2 = data.publicUrl;
+    } else {
+      formData.paper_form_url = data.publicUrl;
+    }
     isUploadingDoc = false;
   }
 
@@ -625,45 +631,79 @@
 
           
                     <!-- SECTION 5 -->
-          <div class="sm:col-span-2 pt-6 pb-2 border-b border-gray-100"><h4 class="text-lg font-bold text-indigo-900">5. Arsip Formulir Kertas</h4></div>
+          <div class="sm:col-span-2 pt-6 pb-2 border-b border-slate-100">
+            <h4 class="text-lg font-bold text-slate-800">5. Arsip Formulir Kertas</h4>
+          </div>
           
           <div class="sm:col-span-2 mb-6">
-            <p class="text-sm text-gray-600 mb-4">Khusus Tim Panitia: Silakan unggah foto formulir kertas fisik siswi sebagai arsip cadangan digital.</p>
-            <div class="flex items-center space-x-6 p-6 bg-gradient-to-r from-gray-50 to-slate-50 border border-gray-200 rounded-3xl shadow-sm">
-              <!-- Kiri: Foto Preview -->
-              <div class="shrink-0 relative">
-                {#if formData.paper_form_url}
-                  <a href={formData.paper_form_url} target="_blank" class="block h-40 w-32 bg-gray-200 rounded-2xl overflow-hidden border-4 border-white shadow-lg hover:opacity-90 transition-opacity">
-                    <img src={formData.paper_form_url} class="w-full h-full object-cover" alt="Arsip Formulir" />
-                  </a>
-                {:else}
-                  <div class="h-40 w-32 bg-white rounded-2xl flex flex-col items-center justify-center border-4 border-gray-100 shadow-sm border-dashed">
-                    <span class="text-gray-400 text-xs font-medium text-center px-2">Belum ada arsip</span>
-                  </div>
-                {/if}
-              </div>
+            <p class="text-sm text-slate-500 mb-6">Khusus Tim Panitia: Silakan unggah foto formulir kertas fisik siswi sebagai arsip cadangan digital.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               
-              <!-- Kanan: Tombol Icon Berjejer -->
-              <div class="flex flex-col space-y-4">
-                <!-- Button 1: Camera -->
-                <button type="button" onclick={openCameraModal} class="flex items-center justify-center w-14 h-14 bg-gray-50 hover:bg-slate-700 text-slate-700 hover:text-white rounded-2xl shadow-sm transition-all border border-gray-200 hover:border-slate-700 group" title="Buka Kamera">
-                  <Camera class="w-6 h-6" />
-                </button>
-                
-                <!-- Button 2: Gallery -->
-                <label class="flex items-center justify-center w-14 h-14 bg-gray-50 hover:bg-gray-700 text-gray-700 hover:text-white rounded-2xl shadow-sm transition-all border border-gray-200 hover:border-gray-700 cursor-pointer group" title="Buka Galeri (Pilih File)">
-                  <FolderOpen class="w-6 h-6" />
-                  <input type="file" accept="image/*" onchange={handleDocumentUpload} class="hidden"/>
-                </label>
+              <!-- UPLOAD 1 (Wajib) -->
+              <div class="bg-slate-50 rounded-3xl p-5 border border-slate-200 flex gap-5 items-stretch shadow-sm">
+                <!-- Kiri: Image Preview -->
+                <div class="flex-1 relative bg-white rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center">
+                  {#if formData.paper_form_url}
+                    <a href={formData.paper_form_url} target="_blank" class="w-full h-full block group">
+                      <img src={formData.paper_form_url} class="w-full h-full object-cover group-hover:opacity-75 transition-opacity" alt="Preview 1" />
+                    </a>
+                    <button type="button" onclick={() => formData.paper_form_url = ''} class="absolute top-2 right-2 bg-slate-900/60 hover:bg-red-600 text-white p-2 rounded-full transition-colors shadow-lg">
+                      <X class="w-4 h-4" />
+                    </button>
+                  {:else}
+                    <span class="text-xs text-slate-400 font-bold text-center px-2">Belum ada arsip<br>(Hal 1 - Wajib)</span>
+                  {/if}
+                </div>
+
+                <!-- Kanan: Tombol -->
+                <div class="flex flex-col gap-4 justify-center shrink-0">
+                  <button type="button" onclick={() => openCameraModal('paper_form')} class="w-14 h-14 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-2xl flex items-center justify-center transition-all text-slate-600" title="Kamera">
+                    <Camera class="w-6 h-6" />
+                  </button>
+                  <label class="flex items-center justify-center w-14 h-14 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-2xl cursor-pointer transition-all text-slate-600" title="Galeri">
+                    <FolderOpen class="w-6 h-6" />
+                    <input type="file" accept="image/*" onchange={(e) => { currentUploadType = 'paper_form'; handleDocumentUpload(e); }} class="hidden" />
+                  </label>
+                </div>
               </div>
 
-              {#if isUploadingDoc}
-                <div class="flex-1 pl-2">
-                  <p class="text-sm text-indigo-600 font-semibold animate-pulse bg-indigo-50 py-3 px-4 rounded-2xl border border-indigo-100 inline-block shadow-sm">⏳ Sedang mengunggah...</p>
+              <!-- UPLOAD 2 (Opsional) -->
+              <div class="bg-slate-50 rounded-3xl p-5 border border-slate-200 flex gap-5 items-stretch shadow-sm">
+                <!-- Kiri: Image Preview -->
+                <div class="flex-1 relative bg-white rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center">
+                  {#if formData.paper_form_url_2}
+                    <a href={formData.paper_form_url_2} target="_blank" class="w-full h-full block group">
+                      <img src={formData.paper_form_url_2} class="w-full h-full object-cover group-hover:opacity-75 transition-opacity" alt="Preview 2" />
+                    </a>
+                    <button type="button" onclick={() => formData.paper_form_url_2 = ''} class="absolute top-2 right-2 bg-slate-900/60 hover:bg-red-600 text-white p-2 rounded-full transition-colors shadow-lg">
+                      <X class="w-4 h-4" />
+                    </button>
+                  {:else}
+                    <span class="text-xs text-slate-400 font-bold text-center px-2">Belum ada arsip<br>(Hal 2 - Opsional)</span>
+                  {/if}
                 </div>
-              {/if}
+
+                <!-- Kanan: Tombol -->
+                <div class="flex flex-col gap-4 justify-center shrink-0">
+                  <button type="button" onclick={() => openCameraModal('paper_form_2')} class="w-14 h-14 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-2xl flex items-center justify-center transition-all text-slate-600" title="Kamera">
+                    <Camera class="w-6 h-6" />
+                  </button>
+                  <label class="flex items-center justify-center w-14 h-14 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-2xl cursor-pointer transition-all text-slate-600" title="Galeri">
+                    <FolderOpen class="w-6 h-6" />
+                    <input type="file" accept="image/*" onchange={(e) => { currentUploadType = 'paper_form_2'; handleDocumentUpload(e); }} class="hidden" />
+                  </label>
+                </div>
+              </div>
+
             </div>
           </div>
+          
+          {#if isUploadingDoc}
+            <div class="sm:col-span-2 mb-6">
+              <p class="text-sm text-indigo-600 font-semibold animate-pulse bg-indigo-50 py-3 px-4 rounded-2xl border border-indigo-100 inline-block shadow-sm">🚀 Sedang mengunggah file...</p>
+            </div>
+          {/if}
 
           {#if errorMsg}
             <div class="rounded-md bg-red-50 p-4">
