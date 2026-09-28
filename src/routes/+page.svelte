@@ -43,6 +43,7 @@
   });
 
   let isUploading = $state(false);
+  let previewImageUrl = $state<string | null>(null);
   let currentUploadType = $state('paper_form');
     let isUploadingDoc = $state(false);
 
@@ -649,9 +650,9 @@
                 <!-- Atas: Image Preview -->
                 <div class="w-full relative bg-white rounded-xl sm:rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center mb-3">
                   {#if formData.paper_form_url}
-                    <a href={formData.paper_form_url} target="_blank" class="w-full h-full block group">
+                    <button type="button" onclick={() => previewImageUrl = formData.paper_form_url} class="w-full h-full block group cursor-zoom-in">
                       <img src={formData.paper_form_url} class="w-full h-full object-cover group-hover:opacity-75 transition-opacity" alt="Preview 1" />
-                    </a>
+                    </button>
                     <button type="button" onclick={() => formData.paper_form_url = ''} class="absolute top-2 right-2 bg-slate-900/60 hover:bg-red-600 text-white p-1.5 sm:p-2 rounded-full transition-colors shadow-lg">
                       <X class="w-4 h-4" />
                     </button>
@@ -677,9 +678,9 @@
                 <!-- Atas: Image Preview -->
                 <div class="w-full relative bg-white rounded-xl sm:rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center mb-3">
                   {#if formData.paper_form_url_2}
-                    <a href={formData.paper_form_url_2} target="_blank" class="w-full h-full block group">
+                    <button type="button" onclick={() => previewImageUrl = formData.paper_form_url_2} class="w-full h-full block group cursor-zoom-in">
                       <img src={formData.paper_form_url_2} class="w-full h-full object-cover group-hover:opacity-75 transition-opacity" alt="Preview 2" />
-                    </a>
+                    </button>
                     <button type="button" onclick={() => formData.paper_form_url_2 = ''} class="absolute top-2 right-2 bg-slate-900/60 hover:bg-red-600 text-white p-1.5 sm:p-2 rounded-full transition-colors shadow-lg">
                       <X class="w-4 h-4" />
                     </button>
@@ -772,6 +773,29 @@
         <!-- Spacer untuk menyeimbangkan posisi tengah shutter -->
         <div class="w-16"></div>
       </div>
+    </div>
+  </div>
+{/if}
+
+
+{#if previewImageUrl}
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
+  <div class="fixed inset-0 z-[110] flex items-center justify-center p-4 sm:p-6 animate-fade-in">
+    <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm transition-opacity" onclick={() => previewImageUrl = null}></div>
+    <div class="relative max-w-4xl w-full h-full max-h-[90vh] flex flex-col items-center justify-center pointer-events-none">
+      <button 
+        type="button" 
+        onclick={() => previewImageUrl = null}
+        class="absolute -top-4 -right-4 sm:top-0 sm:-right-12 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors pointer-events-auto backdrop-blur-md border border-white/20 shadow-xl"
+      >
+        <X class="w-6 h-6" />
+      </button>
+      <img 
+        src={previewImageUrl} 
+        class="max-w-full max-h-full object-contain rounded-xl shadow-2xl pointer-events-auto border border-white/10"
+        alt="Preview Fullscreen" 
+      />
     </div>
   </div>
 {/if}
