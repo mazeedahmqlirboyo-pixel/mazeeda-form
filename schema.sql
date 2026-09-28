@@ -29,6 +29,7 @@ CREATE TABLE public.siswi (
   avatar_url TEXT,
   is_completed BOOLEAN DEFAULT FALSE,
   paper_form_url TEXT,
+  paper_form_url_2 TEXT,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

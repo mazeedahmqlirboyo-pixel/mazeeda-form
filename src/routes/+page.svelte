@@ -38,6 +38,7 @@
     message: '',
     avatar_url: '',
     paper_form_url: '',
+    paper_form_url_2: '',
     is_completed: false
   });
 
