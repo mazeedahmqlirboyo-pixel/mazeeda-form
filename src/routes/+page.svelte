@@ -638,59 +638,59 @@
           <div class="sm:col-span-2 mb-6">
             <p class="text-sm text-slate-500 mb-6">Khusus Tim Panitia: Silakan unggah foto formulir kertas fisik siswi sebagai arsip cadangan digital.</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
               
               <!-- UPLOAD 1 (Wajib) -->
-              <div class="bg-slate-50 rounded-3xl p-5 border border-slate-200 flex gap-5 items-stretch shadow-sm">
-                <!-- Kiri: Image Preview -->
-                <div class="flex-1 relative bg-white rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center">
+              <div class="flex-1 bg-slate-50 rounded-2xl sm:rounded-3xl p-4 border border-slate-200 flex flex-col items-center shadow-sm">
+                <!-- Atas: Image Preview -->
+                <div class="w-full relative bg-white rounded-xl sm:rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center mb-3">
                   {#if formData.paper_form_url}
                     <a href={formData.paper_form_url} target="_blank" class="w-full h-full block group">
                       <img src={formData.paper_form_url} class="w-full h-full object-cover group-hover:opacity-75 transition-opacity" alt="Preview 1" />
                     </a>
-                    <button type="button" onclick={() => formData.paper_form_url = ''} class="absolute top-2 right-2 bg-slate-900/60 hover:bg-red-600 text-white p-2 rounded-full transition-colors shadow-lg">
+                    <button type="button" onclick={() => formData.paper_form_url = ''} class="absolute top-2 right-2 bg-slate-900/60 hover:bg-red-600 text-white p-1.5 sm:p-2 rounded-full transition-colors shadow-lg">
                       <X class="w-4 h-4" />
                     </button>
                   {:else}
-                    <span class="text-xs text-slate-400 font-bold text-center px-2">Belum ada arsip<br>(Hal 1 - Wajib)</span>
+                    <span class="text-[10px] sm:text-xs text-slate-400 font-bold text-center px-2">Belum ada arsip<br>(Hal 1 - Wajib)</span>
                   {/if}
                 </div>
 
-                <!-- Kanan: Tombol -->
-                <div class="flex flex-col gap-4 justify-center shrink-0">
-                  <button type="button" onclick={() => openCameraModal('paper_form')} class="w-14 h-14 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-2xl flex items-center justify-center transition-all text-slate-600" title="Kamera">
-                    <Camera class="w-6 h-6" />
+                <!-- Bawah: Tombol (Berjejer ke Samping) -->
+                <div class="flex flex-row gap-3 justify-center w-full">
+                  <button type="button" onclick={() => openCameraModal('paper_form')} class="flex-1 h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-all text-slate-600" title="Kamera">
+                    <Camera class="w-5 h-5" />
                   </button>
-                  <label class="flex items-center justify-center w-14 h-14 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-2xl cursor-pointer transition-all text-slate-600" title="Galeri">
-                    <FolderOpen class="w-6 h-6" />
+                  <label class="flex-1 h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center cursor-pointer transition-all text-slate-600" title="Galeri">
+                    <FolderOpen class="w-5 h-5" />
                     <input type="file" accept="image/*" onchange={(e) => { currentUploadType = 'paper_form'; handleDocumentUpload(e); }} class="hidden" />
                   </label>
                 </div>
               </div>
 
               <!-- UPLOAD 2 (Opsional) -->
-              <div class="bg-slate-50 rounded-3xl p-5 border border-slate-200 flex gap-5 items-stretch shadow-sm">
-                <!-- Kiri: Image Preview -->
-                <div class="flex-1 relative bg-white rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center">
+              <div class="flex-1 bg-slate-50 rounded-2xl sm:rounded-3xl p-4 border border-slate-200 flex flex-col items-center shadow-sm">
+                <!-- Atas: Image Preview -->
+                <div class="w-full relative bg-white rounded-xl sm:rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center mb-3">
                   {#if formData.paper_form_url_2}
                     <a href={formData.paper_form_url_2} target="_blank" class="w-full h-full block group">
                       <img src={formData.paper_form_url_2} class="w-full h-full object-cover group-hover:opacity-75 transition-opacity" alt="Preview 2" />
                     </a>
-                    <button type="button" onclick={() => formData.paper_form_url_2 = ''} class="absolute top-2 right-2 bg-slate-900/60 hover:bg-red-600 text-white p-2 rounded-full transition-colors shadow-lg">
+                    <button type="button" onclick={() => formData.paper_form_url_2 = ''} class="absolute top-2 right-2 bg-slate-900/60 hover:bg-red-600 text-white p-1.5 sm:p-2 rounded-full transition-colors shadow-lg">
                       <X class="w-4 h-4" />
                     </button>
                   {:else}
-                    <span class="text-xs text-slate-400 font-bold text-center px-2">Belum ada arsip<br>(Hal 2 - Opsional)</span>
+                    <span class="text-[10px] sm:text-xs text-slate-400 font-bold text-center px-2">Belum ada arsip<br>(Hal 2 - Opsional)</span>
                   {/if}
                 </div>
 
-                <!-- Kanan: Tombol -->
-                <div class="flex flex-col gap-4 justify-center shrink-0">
-                  <button type="button" onclick={() => openCameraModal('paper_form_2')} class="w-14 h-14 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-2xl flex items-center justify-center transition-all text-slate-600" title="Kamera">
-                    <Camera class="w-6 h-6" />
+                <!-- Bawah: Tombol (Berjejer ke Samping) -->
+                <div class="flex flex-row gap-3 justify-center w-full">
+                  <button type="button" onclick={() => openCameraModal('paper_form_2')} class="flex-1 h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center transition-all text-slate-600" title="Kamera">
+                    <Camera class="w-5 h-5" />
                   </button>
-                  <label class="flex items-center justify-center w-14 h-14 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-2xl cursor-pointer transition-all text-slate-600" title="Galeri">
-                    <FolderOpen class="w-6 h-6" />
+                  <label class="flex-1 h-12 bg-white border border-slate-200 shadow-sm hover:shadow hover:border-indigo-300 hover:text-indigo-600 rounded-xl flex items-center justify-center cursor-pointer transition-all text-slate-600" title="Galeri">
+                    <FolderOpen class="w-5 h-5" />
                     <input type="file" accept="image/*" onchange={(e) => { currentUploadType = 'paper_form_2'; handleDocumentUpload(e); }} class="hidden" />
                   </label>
                 </div>
