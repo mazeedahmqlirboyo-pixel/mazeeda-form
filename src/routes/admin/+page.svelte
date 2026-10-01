@@ -31,22 +31,28 @@
   
   // Image Preview state
   let previewImage = $state<{url: string, filename: string} | null>(null);
+  let previewRotation = $state(0);
 
     
   
-  // Fungsi untuk memutar gambar 90 derajat ke kiri (counter-clockwise)
-  async function rotateImageLeft(blob: Blob): Promise<Blob> {
+  // Fungsi untuk memutar gambar sesuai derajat
+  async function rotateImageLeft(blob: Blob, angle = -90): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = img.height;
-        canvas.height = img.width;
+        if (Math.abs(angle) % 180 === 90) {
+          canvas.width = img.height;
+          canvas.height = img.width;
+        } else {
+          canvas.width = img.width;
+          canvas.height = img.height;
+        }
         
         const ctx = canvas.getContext('2d');
         if (ctx) {
           ctx.translate(canvas.width / 2, canvas.height / 2);
-          ctx.rotate(-90 * Math.PI / 180);
+          ctx.rotate(angle * Math.PI / 180);
           ctx.drawImage(img, -img.width / 2, -img.height / 2);
           
           canvas.toBlob((rotatedBlob) => {
@@ -328,7 +334,10 @@
         try {
           const res = await fetch(url);
           let blob = await res.blob();
-          blob = await rotateImageLeft(blob);
+          
+          // Memutar SEMUA foto 90 derajat ke kiri (karena instruksi ke siswi adalah memotret landscape)
+          blob = await rotateImageLeft(blob, -90);
+          
           if (isDepan && folderDpn) {
             folderDpn.file(filename, blob);
           } else if (folderBlk) {
@@ -436,19 +445,19 @@
         <!-- Tombol Aksi (Tengah di Mobile, Kanan di Desktop) -->
         <div class="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full lg:w-auto">
           <button 
-              type="button" 
-              onclick={downloadAllPhotosZip}
-              disabled={isDownloadingZip}
-              class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {#if isDownloadingZip}
-                <span class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin sm:mr-2"></span>
-                <span class="hidden sm:inline">Memproses ZIP...</span>
-              {:else}
-                <FileImage class="h-4 w-4 sm:mr-2" />
-                <span class="hidden sm:inline">Download Foto (.zip)</span>
-              {/if}
-            </button>
+                type="button" 
+                onclick={downloadAllPhotosZip}
+                disabled={isDownloadingZip}
+                class="inline-flex items-center justify-center px-4 py-2 border border-slate-200 rounded-xl shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {#if isDownloadingZip}
+                  <span class="w-4 h-4 rounded-full border-2 border-slate-200 border-t-slate-700 animate-spin sm:mr-2"></span>
+                  <span class="hidden sm:inline text-slate-500">Memproses...</span>
+                {:else}
+                  <FileImage class="h-4 w-4 sm:mr-2 text-slate-800" />
+                  <span class="hidden sm:inline">Download (.zip)</span>
+                {/if}
+              </button>
             <label class="cursor-pointer inline-flex items-center justify-center px-4 py-2 border border-slate-200 rounded-xl shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-none">
             <UploadIcon class="h-4 w-4 sm:mr-2 text-slate-800" />
             <span class="hidden sm:inline">Import CSV</span>
@@ -859,13 +868,23 @@
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
-    <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm transition-opacity" onclick={() => previewImage = null}></div>
+    <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm transition-opacity" onclick={() => {previewImage = null; previewRotation = 0; }}></div>
     
     <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center justify-center animate-fade-in w-full h-full">
-      <button type="button" onclick={() => previewImage = null} class="absolute top-0 right-0 sm:-top-4 sm:-right-4 bg-white text-slate-800 rounded-full p-2.5 shadow-xl hover:bg-slate-200 transition-colors z-10">
+      <button type="button" onclick={() => {previewImage = null; previewRotation = 0; }} class="absolute top-0 right-0 sm:-top-4 sm:-right-4 bg-white text-slate-800 rounded-full p-2.5 shadow-xl hover:bg-slate-200 transition-colors z-10">
         <X class="w-6 h-6" />
       </button>
-      <img src={previewImage.url} alt="Arsip Kertas Full" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" />
+      <!-- Tombol Rotate -->
+      <div class="absolute top-4 left-1/2 -translate-x-1/2 flex gap-3 z-10 bg-white/10 backdrop-blur-md p-2 rounded-2xl">
+        <button type="button" title="Rotate Kiri" onclick={(e) => {e.stopPropagation(); previewRotation -= 90; }} class="bg-white text-slate-800 p-2.5 rounded-xl shadow-lg hover:bg-slate-200 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+        <button type="button" title="Rotate Kanan" onclick={(e) => {e.stopPropagation(); previewRotation += 90; }} class="bg-white text-slate-800 p-2.5 rounded-xl shadow-lg hover:bg-slate-200 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+        </button>
+      </div>
+
+      <img src={previewImage.url} alt="Arsip Kertas Full" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl transition-transform duration-300" style="transform: rotate({previewRotation}deg);" />
       
       <!-- Tombol Download (Simpel) -->
       <button 
