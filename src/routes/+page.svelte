@@ -68,37 +68,36 @@
     showInstallBanner = false;
   }
 
-  async function processAndCropImage(fileOrBlob: File | Blob, targetWidth: number, targetHeight: number, quality = 0.7): Promise<File> {    return new Promise((resolve, reject) => {
+  async function processAndScaleImage(fileOrBlob: File | Blob, maxSize: number, _, quality = 0.7): Promise<File> {
+    return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(fileOrBlob);
       
       img.onload = () => {
         URL.revokeObjectURL(url);
         
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > height) {
+          if (width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          }
+        } else {
+          if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
+          }
+        }
+        
         const canvas = document.createElement('canvas');
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
+        canvas.width = width;
+        canvas.height = height;
         const ctx = canvas.getContext('2d');
         if (!ctx) return reject('No canvas context');
 
-        // Hitung crop ke tengah (center crop)
-        const imgRatio = img.width / img.height;
-        const targetRatio = targetWidth / targetHeight;
-        
-        let drawWidth = img.width;
-        let drawHeight = img.height;
-        let offsetX = 0;
-        let offsetY = 0;
-
-        if (imgRatio > targetRatio) {
-          drawWidth = img.height * targetRatio;
-          offsetX = (img.width - drawWidth) / 2;
-        } else {
-          drawHeight = img.width / targetRatio;
-          offsetY = (img.height - drawHeight) / 2;
-        }
-
-        ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight, 0, 0, targetWidth, targetHeight);
+        ctx.drawImage(img, 0, 0, width, height);
         
         canvas.toBlob((blob) => {
           if (!blob) return reject('Blob failed');
@@ -166,7 +165,7 @@
       if (!blob) return;
       
       // Crop & compress hasil webcam menjadi portrait 900x1200
-      const compressedFile = await processAndCropImage(blob, 900, 1200, 0.7);
+      const compressedFile = await processAndScaleImage(blob, 1200, 0.7);
       const file = new File([compressedFile], `webcam-${selectedSiswi.id}-${Math.random()}.jpg`, { type: 'image/jpeg' });
       
       closeCameraModal();
@@ -278,7 +277,7 @@
     const filePath = `${fileName}`;
 
     // Compress and crop to square 800x800 (under 500kb)
-    const compressedFile = await processAndCropImage(file, 800, 800, 0.7);
+    const compressedFile = await processAndScaleImage(file, 800, 0.7);
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
@@ -307,7 +306,7 @@
     const fileName = `form-${selectedSiswi.id}-${Math.random()}.${fileExt}`;
 
     // Compress and crop to portrait 900x1200
-    const compressedFile = await processAndCropImage(file, 900, 1200, 0.7);
+    const compressedFile = await processAndScaleImage(file, 1200, 0.7);
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
@@ -753,7 +752,13 @@
         <video bind:this={videoElement} class="absolute inset-0 w-full h-full object-cover" autoplay playsinline></video>
         <!-- Overlay Frame Panduan -->
         <div class="absolute inset-0 border-4 border-white/60 m-4 rounded-xl pointer-events-none z-10 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"></div>
-        <div class="absolute top-8 text-white/80 text-sm font-bold bg-black/50 px-3 py-1 rounded-full z-20">Posisikan Kertas Dalam Kotak</div>
+        <div class="absolute top-8 flex flex-col items-center gap-2 z-20">
+            <div class="text-white text-sm font-bold bg-indigo-600/90 px-4 py-1.5 rounded-full border border-white/30 shadow-lg flex items-center gap-2 animate-pulse">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+              Mohon Miringkan HP (Landscape)
+            </div>
+            <div class="text-white/90 text-xs font-semibold bg-black/50 px-3 py-1 rounded-full">Posisikan Kertas Dalam Kotak</div>
+          </div>
         <canvas bind:this={canvasElement} class="hidden"></canvas>
       </div>
 
