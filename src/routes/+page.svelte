@@ -752,12 +752,10 @@
         <video bind:this={videoElement} class="absolute inset-0 w-full h-full object-cover" autoplay playsinline></video>
         <!-- Overlay Frame Panduan -->
         <div class="absolute inset-0 border-4 border-white/60 m-4 rounded-xl pointer-events-none z-10 shadow-[0_0_0_9999px_rgba(0,0,0,0.5)]"></div>
-        <div class="absolute top-8 flex flex-col items-center gap-2 z-20">
-            <div class="text-white text-sm font-bold bg-indigo-600/90 px-4 py-1.5 rounded-full border border-white/30 shadow-lg flex items-center gap-2 animate-pulse">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
-              Mohon Miringkan HP (Landscape)
+        <div class="absolute top-6 flex flex-col items-center z-20">
+            <div class="text-white/90 text-xs font-semibold bg-black/40 backdrop-blur-sm px-4 py-1.5 rounded-full">
+              Posisikan HP Miring (Landscape)
             </div>
-            <div class="text-white/90 text-xs font-semibold bg-black/50 px-3 py-1 rounded-full">Posisikan Kertas Dalam Kotak</div>
           </div>
         <canvas bind:this={canvasElement} class="hidden"></canvas>
       </div>
