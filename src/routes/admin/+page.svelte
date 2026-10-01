@@ -33,6 +33,34 @@
   let previewImage = $state<{url: string, filename: string} | null>(null);
 
     
+  
+  // Fungsi untuk memutar gambar 90 derajat ke kiri (counter-clockwise)
+  async function rotateImageLeft(blob: Blob): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.height;
+        canvas.height = img.width;
+        
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.translate(canvas.width / 2, canvas.height / 2);
+          ctx.rotate(-90 * Math.PI / 180);
+          ctx.drawImage(img, -img.width / 2, -img.height / 2);
+          
+          canvas.toBlob((rotatedBlob) => {
+            resolve(rotatedBlob || blob); // Fallback ke original jika gagal
+          }, blob.type || 'image/jpeg', 0.95);
+        } else {
+          resolve(blob as Blob);
+        }
+      };
+      img.onerror = () => resolve(blob as Blob); // Fallback ke original jika error
+      img.src = URL.createObjectURL(blob);
+    });
+  }
+
   async function downloadImage(url, filename) {
     try {
       showToast('success', 'Mengunduh...', 'Mohon tunggu, foto sedang diunduh.');
@@ -299,7 +327,8 @@
       const fetchImage = async (url, filename, isDepan) => {
         try {
           const res = await fetch(url);
-          const blob = await res.blob();
+          let blob = await res.blob();
+          blob = await rotateImageLeft(blob);
           if (isDepan && folderDpn) {
             folderDpn.file(filename, blob);
           } else if (folderBlk) {
