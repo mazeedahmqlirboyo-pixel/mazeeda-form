@@ -284,6 +284,8 @@
     
     try {
       const zip = new JSZip();
+      const folderDpn = zip.folder("Foto_Bagian_Depan");
+      const folderBlk = zip.folder("Foto_Bagian_Belakang");
       let hasFiles = false;
       
       const withPhotos = siswiList.filter(s => s.paper_form_url || s.paper_form_url_2);
@@ -294,11 +296,15 @@
         return;
       }
       
-      const fetchImage = async (url, filename) => {
+      const fetchImage = async (url, filename, isDepan) => {
         try {
           const res = await fetch(url);
           const blob = await res.blob();
-          zip.file(filename, blob);
+          if (isDepan && folderDpn) {
+            folderDpn.file(filename, blob);
+          } else if (folderBlk) {
+            folderBlk.file(filename, blob);
+          }
           hasFiles = true;
         } catch (e) {
           console.error('Failed to fetch', url, e);
@@ -313,12 +319,12 @@
         if (siswi.paper_form_url) {
           let ext = siswi.paper_form_url.split('.').pop().split('?')[0];
           if (ext.length > 4 || !ext.match(/^[a-zA-Z]+$/)) ext = 'jpg';
-          promises.push(fetchImage(siswi.paper_form_url, `(DPN) ${nama}.${ext}`));
+          promises.push(fetchImage(siswi.paper_form_url, `(DPN) ${nama}.${ext}`, true));
         }
         if (siswi.paper_form_url_2) {
           let ext = siswi.paper_form_url_2.split('.').pop().split('?')[0];
           if (ext.length > 4 || !ext.match(/^[a-zA-Z]+$/)) ext = 'jpg';
-          promises.push(fetchImage(siswi.paper_form_url_2, `(BLK) ${nama}.${ext}`));
+          promises.push(fetchImage(siswi.paper_form_url_2, `(BLK) ${nama}.${ext}`, false));
         }
       }
       
