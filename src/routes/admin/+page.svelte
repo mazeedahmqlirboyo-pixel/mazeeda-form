@@ -3,12 +3,14 @@
   import { supabase } from '$lib/supabaseClient';
   import { exportToExcel } from '$lib/utils/excelExport';
   import * as Papa from 'papaparse';
+  import JSZip from 'jszip';
   import { Download, Upload as UploadIcon, Users, FileImage, Search, Filter, ChevronDown, Check, X, Phone, Mail, UserCircle2, Home } from 'lucide-svelte';
 
   let siswiList = $state<any[]>([]);
   let filteredList = $state<any[]>([]);
   let isLoading = $state(true);
   let isUploadingCsv = $state(false);
+  let isDownloadingZip = $state(false);
   let csvError = $state('');
   let csvSuccess = $state('');
   
@@ -20,13 +22,59 @@
   
   // Modal Detail state
   let selectedSiswiDetail = $state<any>(null);
+  let showAddSiswiModal = $state(false);
+  let toastMessage = $state({ show: false, type: 'success', title: '', message: '' });
+  let confirmModal = $state({ show: false, title: '', message: '', type: 'warning', onConfirm: () => {} });
+  let newSiswiNis = $state('');
+  let newSiswiName = $state('');
+  let isAddingSiswi = $state(false);
   
   // Image Preview state
-  let previewImageUrl = $state<string | null>(null);
+  let previewImage = $state<{url: string, filename: string} | null>(null);
+
+    
+  async function downloadImage(url, filename) {
+    try {
+      showToast('success', 'Mengunduh...', 'Mohon tunggu, foto sedang diunduh.');
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      const extMatch = url.match(/\.([^.?]+)(\?.*)?$/);
+      const ext = extMatch ? extMatch[1] : 'jpg';
+      a.download = `${filename}.${ext}`;
+      
+      document.body.appendChild(a);
+      a.click();
+      
+      window.URL.revokeObjectURL(blobUrl);
+      document.body.removeChild(a);
+    } catch (error: any) {
+      showToast('error', 'Gagal', 'Gagal mengunduh foto: ' + error.message);
+    }
+  }
+
+  function showToast(type, title, message) {
+    toastMessage = { show: true, type, title, message };
+    setTimeout(() => {
+      toastMessage.show = false;
+    }, 4000);
+  }
+
+  function requestResetSiswi(siswiId) {
+    confirmModal = {
+      show: true,
+      title: 'Reset Formulir Siswi?',
+      message: 'Semua data yang diisi (foto, WA, hobi, dll) akan dihapus secara permanen, tetapi nama dan NIS tetap aman di database.',
+      type: 'warning',
+      onConfirm: () => resetSiswiForm(siswiId)
+    };
+  }
 
   async function resetSiswiForm(siswiId) {
-    if (!confirm('Yakin ingin mereset formulir siswi ini? Semua data yang diisi (foto, WA, hobi, dll) akan dihapus, tetapi nama dan NIS tetap ada di database.')) return;
-    
+    confirmModal.show = false;
     const { error } = await supabase
       .from('siswi')
       .update({
@@ -38,7 +86,7 @@
         email: null,
         instagram: null,
         tiktok: null,
-        twitter: null,
+        twitter_x: null,
         hobbies: null,
         aspirations: null,
         favorite_food: null,
@@ -56,28 +104,37 @@
       .eq('id', siswiId);
       
     if (error) {
-      alert('Gagal mereset data: ' + error.message);
+      showToast('error', 'Gagal Reset', error.message);
     } else {
-      alert('Formulir berhasil direset!');
+      showToast('success', 'Berhasil', 'Formulir siswi berhasil direset.');
       selectedSiswiDetail = null;
-      await fetchSiswiList();
+      await fetchData();
     }
   }
 
+  function requestDeleteSiswi(siswiId) {
+    confirmModal = {
+      show: true,
+      title: 'Hapus Siswi Permanen?',
+      message: 'PERINGATAN BAHAYA: Data nama dan NIS siswi ini akan musnah selamanya dari database. Tindakan ini tidak bisa dibatalkan!',
+      type: 'danger',
+      onConfirm: () => deleteSiswiData(siswiId)
+    };
+  }
+
   async function deleteSiswiData(siswiId) {
-    if (!confirm('PERINGATAN BAHAYA: Yakin ingin menghapus siswi ini secara PERMANEN dari database? Data nama dan NIS akan hilang selamanya.')) return;
-    
+    confirmModal.show = false;
     const { error } = await supabase
       .from('siswi')
       .delete()
       .eq('id', siswiId);
       
     if (error) {
-      alert('Gagal menghapus data: ' + error.message);
+      showToast('error', 'Gagal Hapus', error.message);
     } else {
-      alert('Data siswi berhasil dihapus permanen!');
+      showToast('success', 'Berhasil', 'Data siswi telah musnah secara permanen.');
       selectedSiswiDetail = null;
-      await fetchSiswiList();
+      await fetchData();
     }
   }
 
@@ -105,6 +162,33 @@
   onMount(async () => {
     await fetchData();
   });
+
+    async function addSiswiManual() {
+    if (!newSiswiName.trim()) {
+      showToast('error', 'Peringatan', 'Nama lengkap tidak boleh kosong!');
+      return;
+    }
+    
+    isAddingSiswi = true;
+    const { error } = await supabase
+      .from('siswi')
+      .insert({ 
+        nis: newSiswiNis.trim() || null,
+        full_name: newSiswiName.trim().toUpperCase(),
+        is_completed: false
+      });
+      
+    if (error) {
+      showToast('error', 'Gagal Tambah', error.message);
+    } else {
+      showAddSiswiModal = false;
+      newSiswiNis = '';
+      newSiswiName = '';
+      await fetchData();
+      showToast('success', 'Berhasil', 'Siswi baru berhasil ditambahkan.');
+    }
+    isAddingSiswi = false;
+  }
 
   async function fetchData() {
     isLoading = true;
@@ -193,6 +277,77 @@
     });
   }
 
+  
+  async function downloadAllPhotosZip() {
+    isDownloadingZip = true;
+    showToast('success', 'Mempersiapkan ZIP', 'Sedang mengambil foto, ini mungkin butuh waktu...');
+    
+    try {
+      const zip = new JSZip();
+      let hasFiles = false;
+      
+      const withPhotos = siswiList.filter(s => s.paper_form_url || s.paper_form_url_2);
+      
+      if (withPhotos.length === 0) {
+        showToast('error', 'Kosong', 'Belum ada foto yang diupload.');
+        isDownloadingZip = false;
+        return;
+      }
+      
+      const fetchImage = async (url, filename) => {
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          zip.file(filename, blob);
+          hasFiles = true;
+        } catch (e) {
+          console.error('Failed to fetch', url, e);
+        }
+      };
+
+      const promises = [];
+      for (const siswi of withPhotos) {
+        let nama = (siswi.full_name || 'Tanpa_Nama').trim();
+        nama = nama.replace(/[^a-zA-Z0-9 ]/g, "").trim(); 
+        
+        if (siswi.paper_form_url) {
+          let ext = siswi.paper_form_url.split('.').pop().split('?')[0];
+          if (ext.length > 4 || !ext.match(/^[a-zA-Z]+$/)) ext = 'jpg';
+          promises.push(fetchImage(siswi.paper_form_url, `(DPN) ${nama}.${ext}`));
+        }
+        if (siswi.paper_form_url_2) {
+          let ext = siswi.paper_form_url_2.split('.').pop().split('?')[0];
+          if (ext.length > 4 || !ext.match(/^[a-zA-Z]+$/)) ext = 'jpg';
+          promises.push(fetchImage(siswi.paper_form_url_2, `(BLK) ${nama}.${ext}`));
+        }
+      }
+      
+      await Promise.all(promises);
+      
+      if (hasFiles) {
+        showToast('success', 'Membuat ZIP', 'Sedang mengkompres file...');
+        const content = await zip.generateAsync({type:"blob"});
+        
+        const url = window.URL.createObjectURL(content);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = "Arsip_Foto_Siswi_Mazeeda.zip";
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        
+        showToast('success', 'Berhasil', 'File ZIP berhasil diunduh!');
+      } else {
+        showToast('error', 'Gagal', 'Gagal mengambil foto-foto tersebut.');
+      }
+    } catch (err: any) {
+      showToast('error', 'Gagal', 'Terjadi kesalahan saat membuat ZIP: ' + err.message);
+    }
+    
+    isDownloadingZip = false;
+  }
+
   function doExport() {
     exportToExcel(siswiList, 'Rekap_Data_Siswi_Mazeeda.xlsx');
   }
@@ -245,7 +400,21 @@
         
         <!-- Tombol Aksi (Tengah di Mobile, Kanan di Desktop) -->
         <div class="flex flex-wrap items-center justify-center lg:justify-end gap-3 w-full lg:w-auto">
-          <label class="cursor-pointer inline-flex items-center justify-center px-4 py-2 border border-slate-200 rounded-xl shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-none">
+          <button 
+              type="button" 
+              onclick={downloadAllPhotosZip}
+              disabled={isDownloadingZip}
+              class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {#if isDownloadingZip}
+                <span class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin sm:mr-2"></span>
+                <span class="hidden sm:inline">Memproses ZIP...</span>
+              {:else}
+                <FileImage class="h-4 w-4 sm:mr-2" />
+                <span class="hidden sm:inline">Download Foto (.zip)</span>
+              {/if}
+            </button>
+            <label class="cursor-pointer inline-flex items-center justify-center px-4 py-2 border border-slate-200 rounded-xl shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 hover:border-slate-300 transition-all focus:outline-none">
             <UploadIcon class="h-4 w-4 sm:mr-2 text-slate-800" />
             <span class="hidden sm:inline">Import CSV</span>
             <input type="file" accept=".csv" class="hidden" onchange={handleCsvUpload} disabled={isUploadingCsv} />
@@ -280,7 +449,12 @@
           <input type="text" bind:value={searchQuery} oninput={applyFilters} placeholder="Cari Nama atau NIS..." class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl leading-5 bg-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:border-slate-400 sm:text-sm transition-colors" />
         </div>
         
-        <!-- Status Filter Custom -->
+        <!-- Tambah Siswi Button -->
+          <button type="button" onclick={() => showAddSiswiModal = true} class="flex items-center justify-center px-4 py-2.5 bg-slate-800 text-white text-sm font-bold rounded-xl shadow-sm hover:bg-slate-700 transition-colors shrink-0">
+            + Tambah
+          </button>
+          
+          <!-- Status Filter Custom -->
         <div class="relative min-w-[180px]">
           <button 
             type="button" 
@@ -375,7 +549,7 @@
                     <!-- Arsip -->
                     <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
                       {#if siswi.paper_form_url}
-                        <button type="button" title="Lihat Arsip Kertas" onclick={(e) => { e.stopPropagation(); previewImageUrl = siswi.paper_form_url; }} class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-slate-100 text-slate-800 rounded-lg hover:bg-slate-700 hover:text-white shadow-sm transition-colors border border-slate-200">
+                        <button type="button" title="Lihat Arsip Kertas" onclick={(e) => { e.stopPropagation(); previewImage = { url: siswi.paper_form_url, filename: `(DPN) ${siswi.full_name}` }; }} class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-slate-100 text-slate-800 rounded-lg hover:bg-slate-700 hover:text-white shadow-sm transition-colors border border-slate-200">
                           <FileImage class="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       {:else}
@@ -439,7 +613,7 @@
         <div class="flex flex-col sm:flex-row gap-6 mb-8">
           <!-- Kiri: Foto / Status -->
           <div class="flex flex-col items-center sm:items-start sm:w-1/3 gap-4">
-            <div class="w-full aspect-[3/4] bg-slate-100 rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" title="Klik untuk perbesar Halaman 1" onclick={() => { if(selectedSiswiDetail.paper_form_url) previewImageUrl = selectedSiswiDetail.paper_form_url; }}>
+            <div class="w-full aspect-[3/4] bg-slate-100 rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" title="Klik untuk perbesar Halaman 1" onclick={() => { if(selectedSiswiDetail.paper_form_url) previewImage = { url: selectedSiswiDetail.paper_form_url, filename: `(DPN) ${selectedSiswiDetail.full_name}` }; }}>
               {#if selectedSiswiDetail.paper_form_url}
                 <img src={selectedSiswiDetail.paper_form_url} class="w-full h-full object-cover" alt="Foto Arsip Halaman 1" />
               {:else}
@@ -451,7 +625,7 @@
             </div>
             
             {#if selectedSiswiDetail.paper_form_url_2}
-            <div class="w-full aspect-[3/4] bg-slate-100 rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" title="Klik untuk perbesar Halaman 2" onclick={() => { previewImageUrl = selectedSiswiDetail.paper_form_url_2; }}>
+            <div class="w-full aspect-[3/4] bg-slate-100 rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" title="Klik untuk perbesar Halaman 2" onclick={() => { previewImage = { url: selectedSiswiDetail.paper_form_url_2, filename: `(BLK) ${selectedSiswiDetail.full_name}` }; }}>
               <img src={selectedSiswiDetail.paper_form_url_2} class="w-full h-full object-cover" alt="Foto Arsip Halaman 2" />
             </div>
             {/if}
@@ -631,23 +805,159 @@
         </div>
         
       </div>
-    </div>
+    
+        <!-- Action Buttons (Reset / Hapus) -->
+        <div class="border-t border-slate-100 p-4 bg-slate-50 flex justify-end gap-3 mt-auto shrink-0 z-20">
+          <button type="button" onclick={() => requestResetSiswi(selectedSiswiDetail.id)} class="px-4 py-2 bg-orange-100 text-orange-700 hover:bg-orange-200 font-bold text-xs rounded-xl transition-colors border border-orange-200">
+            Reset Formulir
+          </button>
+          <button type="button" onclick={() => requestDeleteSiswi(selectedSiswiDetail.id)} class="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 font-bold text-xs rounded-xl transition-colors border border-red-200">
+            Hapus Siswi
+          </button>
+        </div>
+</div>
   </div>
 {/if}
 
 <!-- IMAGE PREVIEW MODAL -->
-{#if previewImageUrl}
+{#if previewImage}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
-    <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm transition-opacity" onclick={() => previewImageUrl = null}></div>
+    <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm transition-opacity" onclick={() => previewImage = null}></div>
     
     <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center justify-center animate-fade-in w-full h-full">
-      <button type="button" onclick={() => previewImageUrl = null} class="absolute top-0 right-0 sm:-top-4 sm:-right-4 bg-white text-slate-800 rounded-full p-2.5 shadow-xl hover:bg-slate-200 transition-colors z-10">
+      <button type="button" onclick={() => previewImage = null} class="absolute top-0 right-0 sm:-top-4 sm:-right-4 bg-white text-slate-800 rounded-full p-2.5 shadow-xl hover:bg-slate-200 transition-colors z-10">
         <X class="w-6 h-6" />
       </button>
-      <img src={previewImageUrl} alt="Arsip Kertas Full" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" />
+      <img src={previewImage.url} alt="Arsip Kertas Full" class="max-w-full max-h-[85vh] object-contain rounded-xl shadow-2xl" />
+      
+      <!-- Tombol Download (Simpel) -->
+      <button 
+        type="button" 
+        title="Download Foto"
+        onclick={() => previewImage && downloadImage(previewImage.url, previewImage.filename)} 
+        class="absolute top-0 left-0 sm:-top-4 sm:-left-4 bg-white text-slate-800 rounded-full p-2.5 shadow-xl hover:bg-slate-200 transition-colors z-10"
+      >
+        <Download class="w-6 h-6" />
+      </button>
     </div>
   </div>
 {/if}
 
+
+
+<!-- ADD SISWI MODAL -->
+{#if showAddSiswiModal}
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick={() => showAddSiswiModal = false}></div>
+    <div class="relative bg-white rounded-[2rem] w-full max-w-md shadow-2xl animate-fade-in flex flex-col overflow-hidden transform transition-all border border-slate-100">
+      
+      <!-- Premium Header -->
+      <div class="bg-gradient-to-br from-slate-800 via-slate-800 to-slate-900 p-8 flex flex-col items-center justify-center relative border-b-4 border-indigo-500">
+        <button type="button" onclick={() => showAddSiswiModal = false} class="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-colors backdrop-blur-sm">
+          <X class="w-5 h-5" />
+        </button>
+        <div class="w-20 h-20 bg-white/5 backdrop-blur-md rounded-full flex items-center justify-center mb-4 ring-1 ring-white/20 shadow-inner">
+          <Users class="w-10 h-10 text-indigo-400" />
+        </div>
+        <h3 class="text-2xl font-extrabold text-white tracking-tight">Tambah Siswi</h3>
+        <p class="text-sm text-slate-400 mt-2 font-medium text-center">Masukkan data siswi secara manual ke database.</p>
+      </div>
+      
+      <!-- Body -->
+      <div class="p-8 space-y-6 bg-slate-50/50">
+        <div>
+          <label for="new_nis" class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Nomor Induk Siswi (Opsional)</label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <span class="text-slate-400 font-mono text-sm">#</span>
+            </div>
+            <input type="text" id="new_nis" bind:value={newSiswiNis} placeholder="Contoh: 12345" class="w-full pl-10 pr-4 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm font-semibold text-slate-800 bg-white shadow-sm transition-all" />
+          </div>
+        </div>
+        
+        <div>
+          <label for="new_name" class="block text-xs font-black text-slate-500 uppercase tracking-wider mb-2">Nama Lengkap Siswi <span class="text-red-500">*</span></label>
+          <div class="relative">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <UserCircle2 class="w-5 h-5 text-slate-400" />
+            </div>
+            <input type="text" id="new_name" bind:value={newSiswiName} placeholder="Masukkan nama lengkap..." class="w-full pl-11 pr-4 py-3.5 rounded-2xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-sm font-semibold text-slate-800 bg-white shadow-sm uppercase transition-all" />
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div class="p-6 border-t border-slate-100 bg-white flex justify-end gap-4">
+        <button type="button" onclick={() => showAddSiswiModal = false} class="px-6 py-3 text-sm font-bold text-slate-500 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded-2xl transition-all">Batal</button>
+        <button type="button" onclick={addSiswiManual} disabled={isAddingSiswi} class="px-6 py-3 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-2xl shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-50 disabled:shadow-none flex items-center">
+          {#if isAddingSiswi}
+            <span class="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin mr-2"></span>
+            Menyimpan...
+          {:else}
+            <Check class="w-5 h-5 mr-2" />
+            Simpan Data
+          {/if}
+
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
+
+
+<!-- CUSTOM CONFIRM MODAL -->
+{#if confirmModal.show}
+  <div class="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" onclick={() => confirmModal.show = false}></div>
+    <div class="relative bg-white rounded-3xl w-full max-w-sm shadow-2xl animate-fade-in flex flex-col overflow-hidden transform transition-all border border-slate-100">
+      
+      <div class="p-8 flex flex-col items-center text-center">
+        {#if confirmModal.type === 'danger'}
+          <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-5 ring-8 ring-red-50">
+            <X class="w-10 h-10 text-red-600" />
+          </div>
+          <h3 class="text-2xl font-extrabold text-slate-800 mb-3">{confirmModal.title}</h3>
+          <p class="text-sm font-medium text-slate-500 leading-relaxed">{confirmModal.message}</p>
+        {:else}
+          <div class="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mb-5 ring-8 ring-orange-50">
+            <span class="text-4xl">⚠️</span>
+          </div>
+          <h3 class="text-2xl font-extrabold text-slate-800 mb-3">{confirmModal.title}</h3>
+          <p class="text-sm font-medium text-slate-500 leading-relaxed">{confirmModal.message}</p>
+        {/if}
+      </div>
+      
+      <div class="p-6 border-t border-slate-100 bg-slate-50 flex gap-4">
+        <button type="button" onclick={() => confirmModal.show = false} class="flex-1 py-3.5 text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 rounded-xl transition-all">
+          Batal
+        </button>
+        <button type="button" onclick={confirmModal.onConfirm} class="flex-1 py-3.5 text-sm font-bold text-white rounded-xl shadow-lg transition-all {confirmModal.type === 'danger' ? 'bg-red-600 hover:bg-red-700 shadow-red-600/30' : 'bg-orange-500 hover:bg-orange-600 shadow-orange-500/30'}">
+          Ya, Lanjutkan
+        </button>
+      </div>
+      
+    </div>
+  </div>
+{/if}
+
+
+<!-- CUSTOM TOAST NOTIFICATION -->
+{#if toastMessage.show}
+  <div class="fixed top-6 left-1/2 -translate-x-1/2 z-[300] animate-fade-in">
+    <div class="flex items-center p-4 pr-6 rounded-2xl shadow-2xl {toastMessage.type === 'success' ? 'bg-emerald-600' : 'bg-red-600'} text-white space-x-4 min-w-[300px]">
+      <div class="flex-shrink-0 bg-white/20 p-2 rounded-full">
+        {#if toastMessage.type === 'success'}
+          <Check class="w-6 h-6 text-white" />
+        {:else}
+          <X class="w-6 h-6 text-white" />
+        {/if}
+      </div>
+      <div>
+        <h4 class="text-sm font-extrabold">{toastMessage.title}</h4>
+        <p class="text-xs font-medium text-white/90 mt-0.5">{toastMessage.message}</p>
+      </div>
+    </div>
+  </div>
+{/if}
