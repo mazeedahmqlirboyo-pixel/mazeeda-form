@@ -2,7 +2,7 @@
   import { onMount, tick } from 'svelte';
   import { supabase } from '$lib/supabaseClient';
   import { getWhatsAppProvider, getProviderColor, type Provider } from '$lib/utils/whatsapp';
-  import { Upload, CheckCircle, Search, ChevronDown, Camera, FolderOpen, Shield, X, FileImage } from 'lucide-svelte';
+  import { Upload, CheckCircle, Search, ChevronDown, Camera, FolderOpen, Shield, X, FileImage, AlertTriangle, AlertCircle, ArrowRight } from 'lucide-svelte';
 
   let siswiList = $state<any[]>([]);
   let filteredSiswi = $state<any[]>([]);
@@ -197,6 +197,45 @@
   let isSaving = $state(false);
   let saveSuccess = $state(false);
   let errorMsg = $state('');
+  let missingFieldsList = $state<{ key: string; label: string; section: string }[]>([]);
+  let isDataComplete = $state(false);
+
+  function checkCompletion(data: typeof formData) {
+    const list: { key: string; label: string; section: string }[] = [];
+    
+    if (!data.paper_form_url || data.paper_form_url.trim() === '') {
+      list.push({ key: 'paper_form_url', label: 'Foto Arsip I (Halaman Depan)', section: 'Arsip' });
+    }
+    if (!data.paper_form_url_2 || data.paper_form_url_2.trim() === '') {
+      list.push({ key: 'paper_form_url_2', label: 'Foto Arsip II (Halaman Belakang)', section: 'Arsip' });
+    }
+    if (!data.whatsapp_number || data.whatsapp_number.trim() === '') {
+      list.push({ key: 'whatsapp_number', label: 'Nomor WhatsApp', section: 'Kontak' });
+    }
+    if (!data.blood_type || data.blood_type.trim() === '') {
+      list.push({ key: 'blood_type', label: 'Golongan Darah', section: 'Data Pribadi' });
+    }
+    if (!data.residence || data.residence.trim() === '') {
+      list.push({ key: 'residence', label: 'Tempat Tinggal / Alamat', section: 'Data Pribadi' });
+    }
+    if (!data.hobbies || data.hobbies.trim() === '') {
+      list.push({ key: 'hobbies', label: 'Hobi', section: 'Minat' });
+    }
+    if (!data.aspirations || data.aspirations.trim() === '') {
+      list.push({ key: 'aspirations', label: 'Cita-cita', section: 'Minat' });
+    }
+    if (!data.quote || data.quote.trim() === '') {
+      list.push({ key: 'quote', label: 'Quotes / Motto Hidup', section: 'Kesan & Pesan' });
+    }
+    if (!data.impression || data.impression.trim() === '') {
+      list.push({ key: 'impression', label: 'Kesan Selama Sekolah', section: 'Kesan & Pesan' });
+    }
+    if (!data.message || data.message.trim() === '') {
+      list.push({ key: 'message', label: 'Pesan', section: 'Kesan & Pesan' });
+    }
+    
+    return list;
+  }
 
   const webhookUrl = 'https://script.google.com/macros/s/AKfycb.../exec'; // Ganti dengan Webhook URL asli
 
@@ -365,11 +404,15 @@
       console.warn('Google Sheets webhook error (diabaikan)', e);
     }
 
+    missingFieldsList = checkCompletion(formData);
+    isDataComplete = missingFieldsList.length === 0;
+
     saveSuccess = true;
     isSaving = false;
     
     // Refresh list to update is_completed status in search dropdown
     await fetchSiswiList();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // Action untuk auto-resize textarea
@@ -457,27 +500,118 @@
       </div>
 
       {#if saveSuccess}
-        <div class="mt-12 mb-12 text-center animate-fade-in">
-          <div class="mx-auto flex items-center justify-center h-28 w-28 rounded-full bg-green-100 mb-6 shadow-inner">
-            <CheckCircle class="h-14 w-14 text-green-600" />
+        {#if isDataComplete}
+          <div class="mt-8 mb-12 text-center animate-fade-in max-w-lg mx-auto">
+            <div class="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-emerald-100 mb-6 shadow-inner ring-8 ring-emerald-50">
+              <CheckCircle class="h-12 w-12 text-emerald-600" />
+            </div>
+            
+            <span class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 mb-3 border border-emerald-200">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 mr-2"></span>
+              Data 100% Lengkap Sempurna
+            </span>
+            
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-3">Terima Kasih!</h2>
+            <p class="text-sm sm:text-base text-slate-600 mb-8 leading-relaxed">
+              Seluruh biodata dan foto arsip untuk <strong class="text-slate-900">{selectedSiswi?.full_name}</strong> telah berhasil disimpan dengan lengkap dan aman ke dalam database MAZEEDA.
+            </p>
+            
+            <button 
+              type="button" 
+              onclick={() => { saveSuccess = false; selectedSiswi = null; searchQuery = ''; showDropdown = false; window.scrollTo({top: 0, behavior: 'smooth'}); }} 
+              class="inline-flex items-center justify-center px-8 py-3.5 border border-transparent shadow-lg text-base font-bold rounded-2xl text-white bg-slate-800 hover:bg-slate-900 transform transition hover:-translate-y-0.5 cursor-pointer"
+            >
+              📝 Selesai / Isi Data Siswi Lainnya
+            </button>
           </div>
-          <h2 class="text-3xl font-extrabold text-gray-900 mb-4">Terima Kasih!</h2>
-          <p class="text-lg text-gray-600 mb-10 max-w-xl mx-auto">Biodata untuk <strong class="text-slate-800">{selectedSiswi?.full_name}</strong> telah berhasil disimpan dengan aman ke dalam database MAZEEDA.</p>
-          <button type="button" onclick={() => { saveSuccess = false; selectedSiswi = null; searchQuery = ''; showDropdown = false; window.scrollTo({top: 0, behavior: 'smooth'}); }} class="inline-flex items-center justify-center px-8 py-4 border border-transparent shadow-lg text-lg font-bold rounded-2xl text-white bg-slate-700 hover:bg-slate-800 transform transition hover:-translate-y-1">
-            📝 Kembali / Isi Data Siswi Lainnya
-          </button>
-        </div>
+        {:else}
+          <div class="mt-6 mb-12 text-center animate-fade-in max-w-xl mx-auto px-2">
+            <div class="mx-auto flex items-center justify-center h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-amber-100 mb-5 shadow-inner ring-8 ring-amber-50">
+              <AlertTriangle class="h-10 w-10 sm:h-12 sm:w-12 text-amber-600" />
+            </div>
+            
+            <span class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 mb-3 border border-amber-200">
+              <span class="w-2 h-2 rounded-full bg-amber-500 mr-2 animate-pulse"></span>
+              Tersimpan Namun Belum Lengkap
+            </span>
+
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-2">Data Anda Belum Lengkap!</h2>
+            <p class="text-sm sm:text-base text-slate-600 mb-6">
+              Biodata untuk <strong class="text-slate-900">{selectedSiswi?.full_name}</strong> sudah tersimpan, namun masih ada <strong class="text-amber-700 font-bold">{missingFieldsList.length} data penting</strong> yang belum terisi:
+            </p>
+
+            <!-- Card Daftar Yang Belum Lengkap -->
+            <div class="bg-amber-50/70 border border-amber-200 rounded-2xl p-4 sm:p-5 mb-8 text-left shadow-xs">
+              <p class="text-xs font-bold text-amber-900 uppercase tracking-wider mb-3 flex items-center">
+                <AlertCircle class="w-4 h-4 mr-1.5 text-amber-600 flex-shrink-0" />
+                Daftar Bagian Yang Masih Kosong:
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {#each missingFieldsList as item}
+                  <div class="flex items-center gap-2 bg-white/90 border border-amber-200/60 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 shadow-xs">
+                    <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
+                    <span class="truncate">{item.label}</span>
+                  </div>
+                {/each}
+              </div>
+            </div>
+
+            <!-- Tombol Aksi (Lanjutkan vs Keluar) -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-3 w-full">
+              <button 
+                type="button" 
+                onclick={() => { 
+                  saveSuccess = false; 
+                  setTimeout(() => {
+                    const el = document.querySelector('form');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }, 100);
+                }} 
+                class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 border border-transparent shadow-lg text-sm sm:text-base font-bold rounded-2xl text-white bg-indigo-600 hover:bg-indigo-700 transform transition hover:-translate-y-0.5 cursor-pointer"
+              >
+                ✏️ Lanjutkan & Lengkapi Sekarang
+                <ArrowRight class="w-4 h-4 ml-2" />
+              </button>
+
+              <button 
+                type="button" 
+                onclick={() => { 
+                  saveSuccess = false; 
+                  selectedSiswi = null; 
+                  searchQuery = ''; 
+                  showDropdown = false; 
+                  window.scrollTo({top: 0, behavior: 'smooth'}); 
+                }} 
+                class="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3.5 border border-slate-200 text-sm font-semibold rounded-2xl text-slate-700 bg-white hover:bg-slate-50 transition-all cursor-pointer"
+              >
+                Simpan & Selesai Nanti
+              </button>
+            </div>
+          </div>
+        {/if}
       {:else if selectedSiswi}
         <form onsubmit={handleSubmit} class="space-y-6 animate-fade-in">
           
           {#if formData.is_completed}
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6 flex items-start">
-              <CheckCircle class="h-5 w-5 text-green-600 mt-0.5 mr-3 flex-shrink-0" />
-              <div>
-                <h3 class="text-sm font-medium text-green-800">Anda sudah mengisi form ini sebelumnya!</h3>
-                <p class="mt-1 text-sm text-green-700">Data lama Anda telah dimuat otomatis. Anda dapat memperbaruinya di bawah ini.</p>
+            {#if checkCompletion(formData).length > 0}
+              <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start shadow-sm">
+                <AlertTriangle class="h-5 w-5 text-amber-600 mt-0.5 mr-3 flex-shrink-0" />
+                <div class="flex-1">
+                  <h3 class="text-sm font-bold text-amber-900">Data Anda Belum Lengkap ({checkCompletion(formData).length} bagian belum terisi)</h3>
+                  <p class="mt-1 text-xs text-amber-700 leading-relaxed">
+                    Beberapa data penting belum terisi. Silakan lengkapi formulir di bawah ini agar data Anda menjadi 100% Lengkap.
+                  </p>
+                </div>
               </div>
-            </div>
+            {:else}
+              <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 mb-6 flex items-start shadow-sm">
+                <CheckCircle class="h-5 w-5 text-emerald-600 mt-0.5 mr-3 flex-shrink-0" />
+                <div>
+                  <h3 class="text-sm font-bold text-emerald-900">Data Anda Sudah Lengkap Sempurna!</h3>
+                  <p class="mt-1 text-xs text-emerald-700">Semua bagian biodata dan foto arsip Anda sudah lengkap. Anda masih dapat memperbaruinya jika ada perubahan.</p>
+                </div>
+              </div>
+            {/if}
           {/if}
 
           <div class="grid grid-cols-1 gap-y-8 gap-x-6 sm:grid-cols-2">
@@ -644,8 +778,9 @@
             
             <div class="flex flex-row gap-3 sm:gap-6">
               
-              <!-- UPLOAD 1 (Wajib) -->
+              <!-- UPLOAD 1 (Arsip I - Depan) -->
               <div class="flex-1 bg-slate-50 rounded-xl sm:rounded-3xl p-2 sm:p-4 border border-slate-200 flex flex-col items-center shadow-sm">
+                <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Arsip I (Depan)</span>
                 <!-- Atas: Image Preview -->
                 <div class="w-full relative bg-white rounded-xl sm:rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center mb-3">
                   {#if formData.paper_form_url}
@@ -656,7 +791,7 @@
                       <X class="w-4 h-4" />
                     </button>
                   {:else}
-                    <span class="text-[10px] sm:text-xs text-slate-400 font-bold text-center px-2">Belum ada arsip<br>(Hal 1 - Wajib)</span>
+                    <span class="text-[10px] sm:text-xs text-slate-400 font-bold text-center px-2">Belum ada arsip<br>(Arsip I - Depan)</span>
                   {/if}
                 </div>
 
@@ -672,8 +807,9 @@
                 </div>
               </div>
 
-              <!-- UPLOAD 2 (Opsional) -->
+              <!-- UPLOAD 2 (Arsip II - Belakang) -->
               <div class="flex-1 bg-slate-50 rounded-xl sm:rounded-3xl p-2 sm:p-4 border border-slate-200 flex flex-col items-center shadow-sm">
+                <span class="text-[10px] sm:text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Arsip II (Belakang)</span>
                 <!-- Atas: Image Preview -->
                 <div class="w-full relative bg-white rounded-xl sm:rounded-2xl overflow-hidden border-2 border-dashed border-slate-200 aspect-[3/4] flex flex-col items-center justify-center mb-3">
                   {#if formData.paper_form_url_2}
@@ -684,7 +820,7 @@
                       <X class="w-4 h-4" />
                     </button>
                   {:else}
-                    <span class="text-[10px] sm:text-xs text-slate-400 font-bold text-center px-2">Belum ada arsip<br>(Hal 2 - Opsional)</span>
+                    <span class="text-[10px] sm:text-xs text-slate-400 font-bold text-center px-2">Belum ada arsip<br>(Arsip II - Belakang)</span>
                   {/if}
                 </div>
 

@@ -178,8 +178,9 @@
     
     // Cek apakah ada field penting yang masih kosong
     const importantFields = [
-      'whatsapp_number', 'blood_type', 'hobbies', 
-      'aspirations', 'quote', 'paper_form_url'
+      'paper_form_url', 'paper_form_url_2',
+      'whatsapp_number', 'blood_type', 'residence',
+      'hobbies', 'aspirations', 'quote', 'impression', 'message'
     ];
     
     const isKurang = importantFields.some(field => !siswi[field] || siswi[field].toString().trim() === '');
