@@ -543,7 +543,8 @@
             <thead class="bg-slate-50">
               <tr class="divide-x divide-slate-200">
                 <th scope="col" class="px-2 sm:px-6 py-3 sm:py-4 text-center text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider w-12 sm:w-24">Status</th>
-                <th scope="col" class="px-2 sm:px-6 py-3 sm:py-4 text-center text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider w-12 sm:w-20">Arsip</th>
+                <th scope="col" class="px-1 sm:px-3 py-3 sm:py-4 text-center text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider w-12 sm:w-16">Arsip I</th>
+                <th scope="col" class="px-1 sm:px-3 py-3 sm:py-4 text-center text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider w-12 sm:w-16">Arsip II</th>
                 <th scope="col" class="px-4 sm:px-6 py-3 sm:py-4 text-center text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider w-32 hidden sm:table-cell">NIS</th>
                 <th scope="col" class="px-3 sm:px-6 py-3 sm:py-4 text-center text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Nama Lengkap</th>
                 <th scope="col" class="px-4 sm:px-6 py-3 sm:py-4 text-center text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Update Terakhir</th>
@@ -552,7 +553,7 @@
             <tbody class="bg-white divide-y divide-slate-200">
               {#if isLoading}
                 <tr>
-                  <td colspan="5" class="px-6 py-12 text-center text-sm font-medium text-slate-400 border-x border-slate-200">
+                  <td colspan="6" class="px-6 py-12 text-center text-sm font-medium text-slate-400 border-x border-slate-200">
                     <div class="animate-pulse flex flex-col items-center">
                       <div class="w-8 h-8 border-4 border-slate-200 border-t-slate-500 rounded-full animate-spin mb-3"></div>
                       Memuat data...
@@ -561,7 +562,7 @@
                 </tr>
               {:else if filteredList.length === 0}
                 <tr>
-                  <td colspan="5" class="px-6 py-12 text-center text-sm font-medium text-slate-500 border-x border-slate-200">
+                  <td colspan="6" class="px-6 py-12 text-center text-sm font-medium text-slate-500 border-x border-slate-200">
                     <div class="flex flex-col items-center">
                       <Users class="w-12 h-12 text-slate-300 mb-3" />
                       Tidak ada data yang cocok.
@@ -590,10 +591,20 @@
                         </span>
                       {/if}
                     </td>
-                    <!-- Arsip -->
-                    <td class="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-center">
+                    <!-- Arsip I -->
+                    <td class="px-1 sm:px-3 py-3 sm:py-4 whitespace-nowrap text-center">
                       {#if siswi.paper_form_url}
-                        <button type="button" title="Lihat Arsip Kertas" onclick={(e) => { e.stopPropagation(); previewImage = { url: siswi.paper_form_url, filename: `(DPN) ${siswi.full_name}` }; }} class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-slate-100 text-slate-800 rounded-lg hover:bg-slate-700 hover:text-white shadow-sm transition-colors border border-slate-200">
+                        <button type="button" title="Lihat Arsip I (Depan)" onclick={(e) => { e.stopPropagation(); previewImage = { url: siswi.paper_form_url, filename: `(DPN) ${siswi.full_name}` }; }} class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-slate-100 text-slate-800 rounded-lg hover:bg-slate-700 hover:text-white shadow-sm transition-colors border border-slate-200">
+                          <FileImage class="w-3 h-3 sm:w-4 sm:h-4" />
+                        </button>
+                      {:else}
+                        <span class="text-slate-300 text-[10px] sm:text-xs font-medium">-</span>
+                      {/if}
+                    </td>
+                    <!-- Arsip II -->
+                    <td class="px-1 sm:px-3 py-3 sm:py-4 whitespace-nowrap text-center">
+                      {#if siswi.paper_form_url_2}
+                        <button type="button" title="Lihat Arsip II (Belakang)" onclick={(e) => { e.stopPropagation(); previewImage = { url: siswi.paper_form_url_2, filename: `(BLK) ${siswi.full_name}` }; }} class="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 bg-slate-100 text-slate-800 rounded-lg hover:bg-slate-700 hover:text-white shadow-sm transition-colors border border-slate-200">
                           <FileImage class="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       {:else}
@@ -657,22 +668,33 @@
         <div class="flex flex-col sm:flex-row gap-6 mb-8">
           <!-- Kiri: Foto / Status -->
           <div class="flex flex-col items-center sm:items-start sm:w-1/3 gap-4">
-            <div class="w-full aspect-[3/4] bg-slate-100 rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" title="Klik untuk perbesar Halaman 1" onclick={() => { if(selectedSiswiDetail.paper_form_url) previewImage = { url: selectedSiswiDetail.paper_form_url, filename: `(DPN) ${selectedSiswiDetail.full_name}` }; }}>
-              {#if selectedSiswiDetail.paper_form_url}
-                <img src={selectedSiswiDetail.paper_form_url} class="w-full h-full object-cover" alt="Foto Arsip Halaman 1" />
-              {:else}
-                <div class="flex flex-col items-center text-slate-300">
-                  <FileImage class="w-12 h-12 mb-2" />
-                  <span class="text-xs font-semibold text-center px-2">Halaman 1 Kosong</span>
-                </div>
-              {/if}
+            <div class="w-full flex flex-col gap-1.5">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Arsip I (Depan)</span>
+              <div class="w-full aspect-[3/4] bg-slate-100 rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" title="Klik untuk perbesar Arsip I" onclick={() => { if(selectedSiswiDetail.paper_form_url) previewImage = { url: selectedSiswiDetail.paper_form_url, filename: `(DPN) ${selectedSiswiDetail.full_name}` }; }}>
+                {#if selectedSiswiDetail.paper_form_url}
+                  <img src={selectedSiswiDetail.paper_form_url} class="w-full h-full object-cover" alt="Foto Arsip I" />
+                {:else}
+                  <div class="flex flex-col items-center text-slate-300">
+                    <FileImage class="w-12 h-12 mb-2" />
+                    <span class="text-xs font-semibold text-center px-2">Arsip I Kosong</span>
+                  </div>
+                {/if}
+              </div>
             </div>
             
-            {#if selectedSiswiDetail.paper_form_url_2}
-            <div class="w-full aspect-[3/4] bg-slate-100 rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-90 transition-opacity" title="Klik untuk perbesar Halaman 2" onclick={() => { previewImage = { url: selectedSiswiDetail.paper_form_url_2, filename: `(BLK) ${selectedSiswiDetail.full_name}` }; }}>
-              <img src={selectedSiswiDetail.paper_form_url_2} class="w-full h-full object-cover" alt="Foto Arsip Halaman 2" />
+            <div class="w-full flex flex-col gap-1.5">
+              <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Arsip II (Belakang)</span>
+              <div class="w-full aspect-[3/4] bg-slate-100 rounded-2xl border-4 border-white shadow-md flex items-center justify-center overflow-hidden {selectedSiswiDetail.paper_form_url_2 ? 'cursor-pointer hover:opacity-90' : ''} transition-opacity" title={selectedSiswiDetail.paper_form_url_2 ? "Klik untuk perbesar Arsip II" : ""} onclick={() => { if(selectedSiswiDetail.paper_form_url_2) previewImage = { url: selectedSiswiDetail.paper_form_url_2, filename: `(BLK) ${selectedSiswiDetail.full_name}` }; }}>
+                {#if selectedSiswiDetail.paper_form_url_2}
+                  <img src={selectedSiswiDetail.paper_form_url_2} class="w-full h-full object-cover" alt="Foto Arsip II" />
+                {:else}
+                  <div class="flex flex-col items-center text-slate-300">
+                    <FileImage class="w-12 h-12 mb-2" />
+                    <span class="text-xs font-semibold text-center px-2">Arsip II Kosong</span>
+                  </div>
+                {/if}
+              </div>
             </div>
-            {/if}
             
             <div class="w-full mt-2">
             

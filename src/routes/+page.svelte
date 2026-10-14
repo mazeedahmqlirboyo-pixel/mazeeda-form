@@ -68,7 +68,7 @@
     showInstallBanner = false;
   }
 
-  async function processAndScaleImage(fileOrBlob: File | Blob, maxSize: number, _, quality = 0.7): Promise<File> {
+  async function processAndScaleImage(fileOrBlob: File | Blob, maxSize: number, quality = 0.7): Promise<File> {
     return new Promise((resolve, reject) => {
       const img = new Image();
       const url = URL.createObjectURL(fileOrBlob);
