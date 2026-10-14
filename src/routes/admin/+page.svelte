@@ -176,11 +176,14 @@
   function getStatusType(siswi) {
     if (!siswi.is_completed) return 'Belum';
     
-    // Cek apakah ada field penting yang masih kosong
+    // Cek apakah ada field penting yang masih kosong (total 19 data isian)
     const importantFields = [
       'paper_form_url',
-      'whatsapp_number', 'blood_type', 'residence',
-      'hobbies', 'aspirations', 'quote', 'impression', 'message'
+      'blood_type', 'residence', 'travel_route',
+      'whatsapp_number', 'email', 'instagram', 'tiktok', 'twitter_x',
+      'hobbies', 'special_skills', 'aspirations',
+      'favorite_food', 'favorite_drink', 'favorite_music', 'favorite_color',
+      'quote', 'impression', 'message'
     ];
     
     const isKurang = importantFields.some(field => !siswi[field] || siswi[field].toString().trim() === '');

@@ -200,37 +200,45 @@
   let missingFieldsList = $state<{ key: string; label: string; section: string }[]>([]);
   let isDataComplete = $state(false);
 
+  const allFormFields = [
+    // 1. Data Pribadi
+    { key: 'blood_type', label: 'Golongan Darah', section: 'Data Pribadi' },
+    { key: 'residence', label: 'Tempat Tinggal / Alamat', section: 'Data Pribadi' },
+    { key: 'travel_route', label: 'Rute Perjalanan', section: 'Data Pribadi' },
+
+    // 2. Kontak & Sosial Media
+    { key: 'whatsapp_number', label: 'Nomor WhatsApp', section: 'Kontak & Sosial Media' },
+    { key: 'email', label: 'Email', section: 'Kontak & Sosial Media' },
+    { key: 'instagram', label: 'Instagram', section: 'Kontak & Sosial Media' },
+    { key: 'tiktok', label: 'TikTok', section: 'Kontak & Sosial Media' },
+    { key: 'twitter_x', label: 'Twitter / X', section: 'Kontak & Sosial Media' },
+
+    // 3. Minat & Favorit
+    { key: 'hobbies', label: 'Hobi', section: 'Minat & Favorit' },
+    { key: 'special_skills', label: 'Keahlian Khusus', section: 'Minat & Favorit' },
+    { key: 'aspirations', label: 'Cita-cita', section: 'Minat & Favorit' },
+    { key: 'favorite_food', label: 'Makanan Favorit', section: 'Minat & Favorit' },
+    { key: 'favorite_drink', label: 'Minuman Favorit', section: 'Minat & Favorit' },
+    { key: 'favorite_music', label: 'Musik / Lagu Favorit', section: 'Minat & Favorit' },
+    { key: 'favorite_color', label: 'Warna Favorit', section: 'Minat & Favorit' },
+
+    // 4. Kesan & Pesan
+    { key: 'quote', label: 'Quotes / Motto Hidup', section: 'Kesan & Pesan' },
+    { key: 'impression', label: 'Kesan Selama Sekolah', section: 'Kesan & Pesan' },
+    { key: 'message', label: 'Pesan', section: 'Kesan & Pesan' },
+
+    // 5. Arsip (Arsip I wajib, Arsip II opsional)
+    { key: 'paper_form_url', label: 'Foto Arsip I (Halaman Depan)', section: 'Arsip' }
+  ];
+
   function checkCompletion(data: typeof formData) {
     const list: { key: string; label: string; section: string }[] = [];
-    
-    if (!data.paper_form_url || data.paper_form_url.trim() === '') {
-      list.push({ key: 'paper_form_url', label: 'Foto Arsip I (Halaman Depan)', section: 'Arsip' });
+    for (const item of allFormFields) {
+      const val = (data as any)[item.key];
+      if (!val || val.toString().trim() === '') {
+        list.push(item);
+      }
     }
-    if (!data.whatsapp_number || data.whatsapp_number.trim() === '') {
-      list.push({ key: 'whatsapp_number', label: 'Nomor WhatsApp', section: 'Kontak' });
-    }
-    if (!data.blood_type || data.blood_type.trim() === '') {
-      list.push({ key: 'blood_type', label: 'Golongan Darah', section: 'Data Pribadi' });
-    }
-    if (!data.residence || data.residence.trim() === '') {
-      list.push({ key: 'residence', label: 'Tempat Tinggal / Alamat', section: 'Data Pribadi' });
-    }
-    if (!data.hobbies || data.hobbies.trim() === '') {
-      list.push({ key: 'hobbies', label: 'Hobi', section: 'Minat' });
-    }
-    if (!data.aspirations || data.aspirations.trim() === '') {
-      list.push({ key: 'aspirations', label: 'Cita-cita', section: 'Minat' });
-    }
-    if (!data.quote || data.quote.trim() === '') {
-      list.push({ key: 'quote', label: 'Quotes / Motto Hidup', section: 'Kesan & Pesan' });
-    }
-    if (!data.impression || data.impression.trim() === '') {
-      list.push({ key: 'impression', label: 'Kesan Selama Sekolah', section: 'Kesan & Pesan' });
-    }
-    if (!data.message || data.message.trim() === '') {
-      list.push({ key: 'message', label: 'Pesan', section: 'Kesan & Pesan' });
-    }
-    
     return list;
   }
 
@@ -543,7 +551,7 @@
                 <AlertCircle class="w-4 h-4 mr-1.5 text-amber-600 flex-shrink-0" />
                 Daftar Bagian Yang Masih Kosong:
               </p>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
                 {#each missingFieldsList as item}
                   <div class="flex items-center gap-2 bg-white/90 border border-amber-200/60 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 shadow-xs">
                     <span class="w-2 h-2 rounded-full bg-amber-500 flex-shrink-0"></span>
