@@ -178,7 +178,7 @@
     
     // Cek apakah ada field penting yang masih kosong
     const importantFields = [
-      'paper_form_url', 'paper_form_url_2',
+      'paper_form_url',
       'whatsapp_number', 'blood_type', 'residence',
       'hobbies', 'aspirations', 'quote', 'impression', 'message'
     ];
@@ -778,9 +778,10 @@
                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Twitter / X</p>
                 <div class="flex items-center text-sm font-semibold text-slate-700">
                   <span class="mr-2 text-slate-400 font-bold">𝕏</span>
-                  {#if selectedSiswiDetail.twitter}
-                    <a href="https://twitter.com/{selectedSiswiDetail.twitter.replace('@', '')}" target="_blank" class="text-slate-800 font-bold hover:text-black underline decoration-slate-300 underline-offset-2">
-                      {selectedSiswiDetail.twitter}
+                  {#if selectedSiswiDetail.twitter_x || selectedSiswiDetail.twitter}
+                    {@const twHandle = (selectedSiswiDetail.twitter_x || selectedSiswiDetail.twitter).replace('@', '')}
+                    <a href="https://twitter.com/{twHandle}" target="_blank" class="text-slate-800 font-bold hover:text-black underline decoration-slate-300 underline-offset-2">
+                      @{twHandle}
                     </a>
                   {:else}
                     -

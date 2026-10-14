@@ -206,9 +206,6 @@
     if (!data.paper_form_url || data.paper_form_url.trim() === '') {
       list.push({ key: 'paper_form_url', label: 'Foto Arsip I (Halaman Depan)', section: 'Arsip' });
     }
-    if (!data.paper_form_url_2 || data.paper_form_url_2.trim() === '') {
-      list.push({ key: 'paper_form_url_2', label: 'Foto Arsip II (Halaman Belakang)', section: 'Arsip' });
-    }
     if (!data.whatsapp_number || data.whatsapp_number.trim() === '') {
       list.push({ key: 'whatsapp_number', label: 'Nomor WhatsApp', section: 'Kontak' });
     }
@@ -567,7 +564,7 @@
                     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                   }, 100);
                 }} 
-                class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 border border-transparent shadow-lg text-sm sm:text-base font-bold rounded-2xl text-white bg-indigo-600 hover:bg-indigo-700 transform transition hover:-translate-y-0.5 cursor-pointer"
+                class="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 border border-transparent shadow-lg text-sm sm:text-base font-bold rounded-2xl text-white bg-slate-800 hover:bg-slate-900 transform transition hover:-translate-y-0.5 cursor-pointer"
               >
                 ✏️ Lanjutkan & Lengkapi Sekarang
                 <ArrowRight class="w-4 h-4 ml-2" />
