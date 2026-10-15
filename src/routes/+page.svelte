@@ -723,37 +723,51 @@
             <div class="sm:col-span-2 pt-6 pb-2 border-b border-gray-100"><h4 class="text-lg font-bold text-indigo-900">3. Minat & Favorit</h4></div>
             <!-- Hobbies & Skills -->
             <div class="sm:col-span-2">
-              <label for="hobbies" class="block text-sm font-semibold text-gray-700">Hobi</label>
-              <textarea id="hobbies" use:autoResizeAction={formData.hobbies} bind:value={formData.hobbies} class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm overflow-hidden min-h-[60px]"></textarea>
+              <label for="hobbies" class="block text-sm font-semibold text-gray-700">
+                Hobi <span class="text-[11px] font-normal text-slate-400 ml-1">(Pisahkan dengan koma jika lebih dari satu)</span>
+              </label>
+              <textarea id="hobbies" use:autoResizeAction={formData.hobbies} bind:value={formData.hobbies} placeholder="Contoh: Membaca Kitab, Menulis, Desain Grafis" class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm overflow-hidden min-h-[60px]"></textarea>
             </div>
             <div class="sm:col-span-2">
-              <label for="special_skills" class="block text-sm font-semibold text-gray-700">Keahlian Khusus</label>
-              <textarea id="special_skills" use:autoResizeAction={formData.special_skills} bind:value={formData.special_skills} class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm overflow-hidden min-h-[60px]"></textarea>
+              <label for="special_skills" class="block text-sm font-semibold text-gray-700">
+                Keahlian Khusus <span class="text-[11px] font-normal text-slate-400 ml-1">(Pisahkan dengan koma jika lebih dari satu)</span>
+              </label>
+              <textarea id="special_skills" use:autoResizeAction={formData.special_skills} bind:value={formData.special_skills} placeholder="Contoh: Qiro'ah, Pidato Bahasa Arab, Kaligrafi" class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm overflow-hidden min-h-[60px]"></textarea>
             </div>
 
             <!-- Aspirations -->
             <div class="sm:col-span-2">
-              <label for="aspirations" class="block text-sm font-semibold text-gray-700">Cita-cita</label>
-              <input type="text" id="aspirations" bind:value={formData.aspirations} class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+              <label for="aspirations" class="block text-sm font-semibold text-gray-700">
+                Cita-cita <span class="text-[11px] font-normal text-slate-400 ml-1">(Pisahkan dengan koma jika lebih dari satu)</span>
+              </label>
+              <input type="text" id="aspirations" bind:value={formData.aspirations} placeholder="Contoh: Guru / Ustadzah, Pengusaha, Dosen" class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
 
             <!-- Favorites -->
             <div>
-              <label for="favorite_food" class="block text-sm font-semibold text-gray-700">Makanan Favorit</label>
-              <input type="text" id="favorite_food" bind:value={formData.favorite_food} class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+              <label for="favorite_food" class="block text-sm font-semibold text-gray-700">
+                Makanan Favorit <span class="text-[11px] font-normal text-slate-400 ml-1">(Gunakan koma)</span>
+              </label>
+              <input type="text" id="favorite_food" bind:value={formData.favorite_food} placeholder="Contoh: Nasi Goreng, Bakso, Sate" class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
             <div>
-              <label for="favorite_drink" class="block text-sm font-semibold text-gray-700">Minuman Favorit</label>
-              <input type="text" id="favorite_drink" bind:value={formData.favorite_drink} class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+              <label for="favorite_drink" class="block text-sm font-semibold text-gray-700">
+                Minuman Favorit <span class="text-[11px] font-normal text-slate-400 ml-1">(Gunakan koma)</span>
+              </label>
+              <input type="text" id="favorite_drink" bind:value={formData.favorite_drink} placeholder="Contoh: Es Teh, Jus Alpukat, Matcha" class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
             <div>
-              <label for="favorite_music" class="block text-sm font-semibold text-gray-700">Musik / Lagu Favorit</label>
-              <input type="text" id="favorite_music" bind:value={formData.favorite_music} class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+              <label for="favorite_music" class="block text-sm font-semibold text-gray-700">
+                Musik / Lagu Favorit <span class="text-[11px] font-normal text-slate-400 ml-1">(Gunakan koma)</span>
+              </label>
+              <input type="text" id="favorite_music" bind:value={formData.favorite_music} placeholder="Contoh: Sholawat, Nasyid, Pop Akustik" class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
 
             <div class="sm:col-span-2">
-              <label for="favorite_color" class="block text-sm font-semibold text-gray-700">Warna Favorit</label>
-              <input type="text" id="favorite_color" bind:value={formData.favorite_color} class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+              <label for="favorite_color" class="block text-sm font-semibold text-gray-700">
+                Warna Favorit <span class="text-[11px] font-normal text-slate-400 ml-1">(Gunakan koma)</span>
+              </label>
+              <input type="text" id="favorite_color" bind:value={formData.favorite_color} placeholder="Contoh: Biru Muda, Sage Green, Hitam" class="mt-1 block w-full border border-gray-200 bg-gray-50/50 focus:bg-white rounded-xl py-3 px-4 transition-all focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
             </div>
             <!-- SECTION 4 -->
             <div class="sm:col-span-2 pt-6 pb-2 border-b border-gray-100"><h4 class="text-lg font-bold text-indigo-900">4. Kesan & Pesan</h4></div>
